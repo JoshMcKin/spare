@@ -1,5 +1,4 @@
 require "active_record"
-require 'byebug'
 module ActiveRecord
 
   # TODO - Refactor using only those modules necessary for things to work, should
