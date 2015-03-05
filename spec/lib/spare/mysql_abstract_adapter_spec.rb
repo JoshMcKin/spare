@@ -4,7 +4,7 @@ describe  ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter do
   describe '#stored_procedure' do
 
     context "stored procedure does not exist" do
-      it {expect(ActiveRecord::Base.connection.stored_procedure("bad")).to be_nil}
+      it {expect {ActiveRecord::Base.connection.stored_procedure("bad")}.to raise_error(ActiveRecord::StoredProcedureNotFound) }
     end
 
     context "stored procedure does exist" do

@@ -1,3 +1,4 @@
+require 'spare/exceptions'
 require 'active_record/connection_adapters/abstract_mysql_adapter'
 module ActiveRecord
   module ConnectionAdapters
@@ -5,15 +6,15 @@ module ActiveRecord
 
       # Returns hash describing the stored procedure.
       def stored_procedure(name)#:nodoc:
-        name = name.split('.').reverse
+        sp_name = name.split('.').reverse
 
-        sql = "SELECT db,specific_name,param_list,db_collation FROM mysql.proc WHERE specific_name = #{quote(name[0])}"
-        sql << " AND db = #{quote(name[1])}" if name[1]
+        sql = "SELECT db,specific_name,param_list,db_collation FROM mysql.proc WHERE specific_name = #{quote(sp_name[0])}"
+        sql << " AND db = #{quote(sp_name[1])}" if sp_name[1]
 
         result = execute(sql)
         keys = result.fields.collect{|k| k.to_sym}
         values = result.to_a[0]
-        return nil unless values
+        raise ActiveRecord::StoredProcedureNotFound, "#{name} was not found" unless values
         sp = Hash[keys.zip(values)]
         sp[:param_list] = stored_procedure_params(sp[:param_list], sp[:db_collation])
         sp

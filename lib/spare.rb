@@ -1,4 +1,5 @@
 require "active_record"
+require "spare/exceptions"
 require "spare/core"
 require "spare/attributes"
 require "spare/mysql_abstract_adapter"

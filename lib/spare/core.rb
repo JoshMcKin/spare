@@ -2,7 +2,7 @@ module Spare
   module Core
     # Returns a string like 'MyStoredProcedure(p_id:integer, p_title:string, p_body:text)'
     def inspect
-      if self == Base
+      if self == ActiveRecord::Base
         super
       elsif abstract_class?
         super
