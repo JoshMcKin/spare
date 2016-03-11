@@ -1,5 +1,5 @@
 require 'spec_helper'
-
+require 'byebug'
 class SpInsert < ActiveRecord::StoredProcedure;end
 
 class Foo < ActiveRecord::Base;end
@@ -15,8 +15,8 @@ describe ActiveRecord::StoredProcedure do
 
   describe '#execute' do
     let (:sp_insert) {SpInsert.new(:p_name => "foo",:p_deci => 2.0, :p_date => Date.today, :in_out_add => 4)}
-    it {expect(sp_insert).to be_valid}
-    it {expect(sp_insert.execute).to eql(true)}
+    it { expect(sp_insert).to be_valid}
+    it { expect(sp_insert.execute).to eql(true) }
     it "should work" do
       expect {
         sp_insert.execute

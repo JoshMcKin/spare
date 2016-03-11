@@ -4,6 +4,10 @@ module ActiveRecord
   module ConnectionAdapters
     class AbstractMysqlAdapter < AbstractAdapter
 
+      unless ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR > 1
+        NATIVE_DATABASE_TYPES[:primary_key] = "int(11) auto_increment PRIMARY KEY"
+      end
+
       # Returns hash describing the stored procedure.
       def stored_procedure(name)#:nodoc:
         sp_name = name.split('.').reverse
@@ -33,7 +37,14 @@ module ActiveRecord
           param_type = param[0].upcase
           field_name = param[1].to_s.underscore #set_field_encoding(param[1])
           sql_type = param[2]
-          column = new_column(field_name, nil, sql_type, false, collation)
+
+          if ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR > 1
+            cast_type = lookup_cast_type(sql_type)
+            column = new_column(field_name, nil, cast_type, sql_type, true, collation, nil)
+          else
+            column = new_column(field_name, nil, sql_type, false, collation)
+          end
+          
           column.param_type = param_type
           params << column
         end

@@ -47,7 +47,7 @@ module ActiveRecord
     def inout_sql
       sql = []
       inout_params.each do |param|
-        sql << "SET @#{param.name} = #{connection.quote(send(param.name))}"
+        sql << "SET @#{param.name} = #{self.class.connection.quote(send(param.name))}"
       end
       sql
     end
