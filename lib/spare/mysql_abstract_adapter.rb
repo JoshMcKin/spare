@@ -61,22 +61,19 @@ module ActiveRecord
       end
 
       def execute_stored_procedure(sp)
-
         call_results = execute(stored_procedure_to_sql(sp))
 
-        if sp_out_params(sp).length != 0
-          clnt = instance_variable_get(:@connection)
-          while clnt.next_result
-            if result_array = clnt.store_result.to_a[0]
-              sp_out_params(sp).each_with_index do |param,i|
-                sp.__send__ "#{param.name}=", result_array[i]
-              end
+        clnt = instance_variable_get(:@connection)
+        while clnt.next_result
+          if result_array = clnt.store_result.to_a[0]
+            sp_out_params(sp).length != 0
+            sp_out_params(sp).each_with_index do |param,i|
+              sp.__send__ "#{param.name}=", result_array[i]
             end
           end
-          nil
-        else
-          call_results
         end
+
+        call_results
       end
 
       private
@@ -102,7 +99,10 @@ module ActiveRecord
       end
 
       def sp_out_sql(sp)
-        "SELECT #{sp_out_params(sp).collect{|param| "@#{param.name}"}.join(',')};"
+        out_vars = sp_out_params(sp).map{|param| "@#{param.name}"}.join(',')
+        if !out_vars.blank?
+          "SELECT #{sp_out_params(sp).map{|param| "@#{param.name}"}.join(',')};"
+        end
       end
 
       # In MySQL even with multi-statements flag set, variables must be set 1 at a time, so return an array

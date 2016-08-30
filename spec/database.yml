@@ -2,10 +2,9 @@
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 common: &common
-  pool: 100
+  pool: 1
   timeout: 5000
   adapter: mysql2
-  reconnect: true
   username: root
 
 without_db:
