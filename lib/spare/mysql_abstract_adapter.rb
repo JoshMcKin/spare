@@ -44,11 +44,78 @@ module ActiveRecord
           else
             column = new_column(field_name, nil, sql_type, false, collation)
           end
-          
+
           column.param_type = param_type
           params << column
         end
         params
+      end
+
+      def stored_procedure_to_sql(sp)
+        sql = []
+        sql << sp_inout_sql(sp)
+        sql << sp_call_sql(sp)
+        sql << sp_out_sql(sp)
+        sql.compact!
+        sql.join("\n")
+      end
+
+      def execute_stored_procedure(sp)
+
+        call_results = execute(stored_procedure_to_sql(sp))
+
+        if sp_out_params(sp).length != 0
+          clnt = instance_variable_get(:@connection)
+          while clnt.next_result
+            if result_array = clnt.store_result.to_a[0]
+              sp_out_params(sp).each_with_index do |param,i|
+                sp.__send__ "#{param.name}=", result_array[i]
+              end
+            end
+          end
+          nil
+        else
+          call_results
+        end
+      end
+
+      private
+
+      def sp_in_params(sp)
+        prms = []
+        sp.class.stored_procedure[:param_list].each do |param|
+          if param.param_type == "IN"
+            prms << quote(sp.read_attribute(param.name))
+          else # OUT
+            prms << "@#{param.name}"
+          end
+        end
+        prms
+      end
+
+      def sp_out_params(sp)
+        sp.class.stored_procedure[:param_list].select { |param| param.param_type.to_s =~ /out/i }
+      end
+
+      def sp_inout_params(sp)
+        sp.class.stored_procedure[:param_list].select { |param| param.param_type.to_s =~ /inout/i }
+      end
+
+      def sp_out_sql(sp)
+        "SELECT #{sp_out_params(sp).collect{|param| "@#{param.name}"}.join(',')};"
+      end
+
+      # In MySQL even with multi-statements flag set, variables must be set 1 at a time, so return an array
+      def sp_inout_sql(sp)
+        sql = []
+        sp_inout_params(sp).each do |param|
+          sql << "SET @#{param.name} = #{quote(sp.send(param.name))};"
+        end
+        sql
+      end
+
+      def sp_call_sql(sp)
+        "CALL #{sp.class.stored_procedure[:db]}.#{sp.class.stored_procedure[:specific_name]}(#{sp_in_params(sp).join(',')});"
       end
     end
   end

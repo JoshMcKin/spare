@@ -21,13 +21,13 @@ describe  ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter do
                         END})
       end
       context "called with the stored procedure's name" do
-        let (:sp) {ActiveRecord::Base.connection.stored_procedure("sp_test_adapter")}
+        let (:sp) { ActiveRecord::Base.connection.stored_procedure("sp_test_adapter") }
         it {expect(sp).to be_a(Hash)}
         it {expect(sp[:param_list]).to be_a(Array)}
       end
 
       context "called the stored procedure and database name" do
-        let (:sp) {ActiveRecord::Base.connection.stored_procedure("sp_test.sp_test_adapter")}
+        let (:sp) { ActiveRecord::Base.connection.stored_procedure("sp_test.sp_test_adapter") }
         it {expect(sp).to be_a(Hash)}
         it {expect(sp[:param_list]).to be_a(Array)}
       end
@@ -35,12 +35,13 @@ describe  ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter do
   end
 
   describe '#stored_procedure_params' do
-    let (:sp_params) { %q{IN  p_name            VARCHAR(255)  ,
-                          IN  p_bar           	DECIMAL(10,2) ,
-                          IN  p_other           DATE		  ,
-                          OUT results			INT(11)}
-                       }
-    let (:parsed_params) {ActiveRecord::Base.connection.stored_procedure_params(sp_params, 'utf8_general_ci')}
+    let (:sp_params) do
+      %q{IN  p_name           VARCHAR(255)  ,
+         IN  p_bar           	DECIMAL(10,2) ,
+         IN  p_other          DATE		  ,
+         OUT results			    INT(11)}
+    end
+    let (:parsed_params) { ActiveRecord::Base.connection.stored_procedure_params(sp_params, 'utf8_general_ci') }
 
     it {expect(parsed_params).to be_a(Array)}
     it {expect(parsed_params.length).to eql(4)}
